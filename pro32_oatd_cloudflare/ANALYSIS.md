@@ -128,8 +128,8 @@ search_one_page(page_url): [每页 20 次重试]
 | 项目 | 防护 | 应对路线 |
 |------|------|---------|
 | 本项目 oatd | Cloudflare Turnstile | 浏览器自动化过验证 + cf_clearance 刷新（**本报告**） |
-| jsReverseExample/pro01 | 加速乐 521 | 双层 JS 挑战 Cookie hook + SHA 暴力破解（纯算法） |
-| jsReverseExample/pro03 | 阿里云 WAF acw_sc__v2 | 固定置换表 unsbox + 固定 key XOR（纯算法） |
+| eg_js_reverse/pro01 | 加速乐 521 | 双层 JS 挑战 Cookie hook + SHA 暴力破解（纯算法） |
+| eg_js_reverse/pro03 | 阿里云 WAF acw_sc__v2 | 固定置换表 unsbox + 固定 key XOR（纯算法） |
 | ruishuExample/ | 瑞数 WAF | sdenv 补环境 / 浏览器三档决策 |
 | 实战项目/pro30 | AWS WAF | `aws-waf-token 逆向.md`（纯算法 token 生成） |
 

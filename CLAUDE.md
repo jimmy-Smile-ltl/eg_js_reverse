@@ -1,4 +1,4 @@
-# CLAUDE.md — jsReverseExample 工作指南
+# CLAUDE.md — eg_js_reverse 工作指南
 
 本文件指导 Claude Code 在本仓库内新增/维护 JS 逆向复现项目。规范原则：**最简化、可复现、文档清晰**。
 
@@ -11,7 +11,7 @@
 ## 目录与命名
 
 ```
-jsReverseExample/
+eg_js_reverse/
 ├── README.md             # 总索引：项目清单 + 迁移映射 + 规范速览
 ├── CLAUDE.md             # 本文件
 ├── _template/            # 新项目模板（复制改名，不直接修改）

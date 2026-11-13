@@ -199,7 +199,7 @@ def main() -> None:
         except Exception as e:
             check(False, "live request chain", f"({e})")
     else:
-        print("[SKIP] --live real request (add --live, needs network + proxy)")
+        print("[SKIP] --live real request (add --live, needs network; rate limit may trigger captcha)")
 
     print(f"\n{passed}/{total} passed")
     if passed != total:

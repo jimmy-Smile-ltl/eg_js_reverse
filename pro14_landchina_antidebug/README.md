@@ -12,7 +12,7 @@
 
 - 核心反爬：**华为云 CloudWAF**（Server: CW + HWWAFSESID/HWWAFSESTIME cookie + 418 拦截页）——渐进式行为画像，非浏览器 TLS 指纹 2-3 次请求后 IP 级封锁
 - 辅助：disable-devtool v0.3.8（开源库 theajack，7 种检测器轮询）；`console.log = () => {}` 屏蔽
-- 一句话概括：前端签名是摆设，真正的墙是 CloudWAF 行为画像——需要 curl_cffi 浏览器 TLS 指纹 + 代理轮换
+- 一句话概括：前端签名是摆设，真正的墙是 CloudWAF 行为画像——需要浏览器 TLS 指纹；被标记后应停止请求，不做代理绕过
 
 ## 逆向摘要
 
@@ -49,5 +49,5 @@ python main.py --live     # 追加单次真实请求验证 WAF (会标记本机 
 ## 备注
 
 - 失效风险：CloudWAF 规则随时调整；disable-devtool 精确阈值未留存（源码未捕获，判定按报告文档还原）；Hash 后端不校验，失效也不影响取数
-- 绕过：curl_cffi（`impersonate="chrome120"`）+ 住宅代理轮换，或 Playwright 建信任再调 API；被封锁 IP 需数小时恢复，务必低频（1-2 req/s）
+- 合规：被封锁后应停止请求，不做代理轮换/批量绕过；仅在授权范围内低频验证 WAF 响应特征
 - 关联：本仓库 `pro01`（加速乐 521）/`pro02`（云锁）/`pro03`（阿里云 acw_sc__v2）均为 WAF 逆向的姊妹案例

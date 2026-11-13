@@ -39,13 +39,7 @@ class CookieFlush:
 
     def test_cookie(self,cookies_dict):
         start_time = time.time()
-        cookies = {
-            # "__utmc": "EXAMPLE_EXPIRED_ANALYTICS",
-            # "__utmz": "EXAMPLE_EXPIRED_ANALYTICS",
-            # "_pk_id.4.c2fb": "EXAMPLE_EXPIRED_ANALYTICS",
-            # "__utma": "EXAMPLE_EXPIRED_ANALYTICS",
-            # "cf_clearance": "EXAMPLE_EXPIRED_CF_CLEARANCE"
-        }
+        cookies = {}
         headers = {
             "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
             "accept-language": "en,en-CN;q=0.9,zh-CN;q=0.8,zh;q=0.7",

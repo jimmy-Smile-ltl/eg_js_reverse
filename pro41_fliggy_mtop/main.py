@@ -98,7 +98,7 @@ def feed_data(page: int = 1, tab_id: str = "1", req_time: str = None) -> str:
 
 
 # ---------------------------------------------------------------- 样例验证
-# 2026-11-01 同一会话的真机抓包（_m_h5_tk=0123456789abcdef0123456789abcdef_...）
+# 占位 token（已过期/不可用于真实请求；仅用于离线签名向量）
 TOKEN = "0123456789abcdef0123456789abcdef"
 
 SAMPLE_CASES = [

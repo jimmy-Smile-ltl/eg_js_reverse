@@ -45,9 +45,9 @@ python main.py --live  # +1 项: 真实请求 -> RSA body + sign headers -> HTTP
 
 - 样例对比：12/12 通过（2026-08-20）
 - 真实请求：`--live` HTTP 200 `{code:0, count:54886}`，50 行数据 AES 解密成功（首条 end_time=2026-08-19 21:45，2026-08-20 实测）；缺 Referer/UA 会 403
-- 失效风险：AES key/iv 若轮换需重新抓包（aes.util.js 另有混淆密钥串，实测对当前响应无效，疑似登录等其他接口用）；频繁访问触发 4 位数字 kaptcha 验证码（需代理池）
+- 失效风险：AES key/iv 若轮换需重新抓包（aes.util.js 另有混淆密钥串，实测对当前响应无效，疑似登录等其他接口用）；频繁访问会触发 4 位数字 kaptcha 验证码，应降低频率并停止批量请求
 
 ## 备注
 
 - xhr.js 的 `getHeaders` 是笔误调试版（sign 算在密文上），before_ajax.js 才是正确版——还原时两个文件都留在了原项目
-- 验证码接口 `GET /front/code/visited/generate?timestamp=` + `POST /front/code/visited/verify`（{"code":"4位数字"}）本身无需签名；OCR 识别未成功，靠代理池规避
+- 验证码接口 `GET /front/code/visited/generate?timestamp=` + `POST /front/code/visited/verify`（{"code":"4位数字"}）本身无需签名；OCR 识别未成功，遇到验证码应停止，不通过 IP 轮换规避

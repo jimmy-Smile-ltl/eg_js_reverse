@@ -20,7 +20,7 @@
          码宽从 9bit 动态扩容 (每写 512 个码字 +1bit); 码流按 6bit 打包映射回字符表。
     服务端 decode 后校验 mc1/mc2 (绑定 wafToken+请求+指纹) 与 wafToken/serverTs 回显。
 
-样例来源: 2026-08 抓包 (3-补环境方案/e2e 日志: wafToken EXAMPLE_WAF_TOKEN... / serverTs 1782267246163)
+样例来源: 占位 wafToken + 已过期 serverTs 1782267246163（仅作算法比对，不可回放）
 归档来源: 经典 不开源/雪球网-md5__1038-WAF签名-2026-08-16 (本项目补全其未完成的纯算实现)
 交叉验证: m2 + 3 组完整 token 与 md1038_generator.js 逐字节一致 (--node, 固定随机/时间)
 """
@@ -37,7 +37,7 @@ _CHAR_TABLE = "g_GTtAIr2=sVcC6wvxopuSQYWbjFl5O3P7qeZakJBLiyXd8z/f4U09HmKRMhEDNn1
 _HEX = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "A", "B", "C", "D", "E", "F"]
 SALT = "222029ad07"
 
-# 真实抓包样例 (2026-08)
+# 占位 WAF token（已过期/不可回放；仅用于离线算法向量）
 WAF_TOKEN = "EXAMPLE_EXPIRED_WAF_TOKEN_00000000000000000="
 SERVER_TS = "1782267246163"
 API_PATH = "xueqiu.com/statuses/fundx/public/list.json"
@@ -273,7 +273,7 @@ def _seq(a: int, b: int, m: int, n: int = 48) -> list:
 
 # 确定性向量: (waf_token, server_ts, api_path, method, now_ms, (a,b,m), expected)
 # 随机序列/时间固定, 期望值由 reference/node_deterministic.js 生成并逐字节核对;
-# waf_token/server_ts 为已过期测试值, 不可用于真实请求。
+# waf_token 为占位值, server_ts 为已过期值, 均不可用于真实请求。
 SAMPLE_CASES = [
     (WAF_TOKEN, SERVER_TS, API_PATH, "get", 1788025000123, (73, 11, 97),
      "222029ad07-I28t27_/aA/9_g72gf2geTKfYB0tW8tWbtWeI292_gA/fy27YB2Xv8TK6IqD2g7A/8IP2TB08_g_g3YBEAPArvPA2EgCHtgIr2ErB_TgATW_gWOrgEr/_8Iw4IxfK=dAiXv6t22Iv62g68P3IP6Uxg8g6IBa2gaIP4tW9A9zT2b"),

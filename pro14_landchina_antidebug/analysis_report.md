@@ -126,15 +126,17 @@ CloudWAF 使用**渐进式行为画像**来识别爬虫：
 - 网页的 API 调用依赖于 WAF 放行 CORS 预检请求
 - 当 WAF 不信任浏览器会话时，连真实网页的数据加载也会被阻断
 
-#### 绕过方向
+#### 观察与处置建议
 
 | 方案 | 可行性 | 说明 |
 |------|--------|------|
-| **curl_cffi + 住宅代理** | ⭐⭐⭐ | 浏览器 TLS 指纹 + IP 轮换避免标记 |
-| **Playwright + 代理池** | ⭐⭐⭐ | 真实浏览器环境，WAF 无法区分 |
-| **IP 代理轮换** | ⭐⭐ | 需要频繁切换 IP，成本较高 |
+| **curl_cffi + 浏览器 TLS 指纹** | ⭐ | 仅用于低频、授权验证 |
+| **Playwright 真实浏览器** | ⭐ | 仅用于复现 WAF 行为 |
+| **停止请求 / 人工复核** | ✅ | IP 被标记后应停止，等待恢复 |
 | **Python requests 直连** | ❌ | IP 会被快速标记 |
 | **curl 直连** | ❌ | 同上，即使带 WAF Cookie 也不行 |
+
+> 本仓库不提供 IP 轮换等绕过方案；被 WAF 标记后应停止请求，仅在授权范围内做单次验证。
 
 ---
 
@@ -253,7 +255,7 @@ Hash = MD5(userAgent + dayOfMonth + lastPathSegment)
 2. 一旦 IP 被标记 → 所有请求 418 拦截
 3. 封锁是 IP 维度的（非 session），换工具也无效
 
-### 6.2 方案 A: curl_cffi + 代理轮换（推荐）
+### 6.2 方案 A: curl_cffi + 浏览器 TLS 指纹（低频验证）
 
 ```python
 import hashlib
@@ -274,7 +276,7 @@ class LandchinaSpider:
         last_seg = path.split("/")[-1]
         return hashlib.md5(f"{self.ua}{day}{last_seg}".encode()).hexdigest()
 
-    def fetch_results(self, start_date, end_date, page=1, page_size=50, proxy=None):
+    def fetch_results(self, start_date, end_date, page=1, page_size=50):
         url = f"{self.base_url}/tGdxm/result/list"
         headers = {
             "Content-Type": "application/json",
@@ -290,13 +292,11 @@ class LandchinaSpider:
             "startDate": f"{start_date} 00:00:00",
             "endDate": f"{end_date} 23:59:59",
         }
-        proxies = {"http": proxy, "https": proxy} if proxy else None
         resp = cffi_requests.post(
-            url, json=payload, headers=headers,
-            proxies=proxies, impersonate="chrome120"
+            url, json=payload, headers=headers, impersonate="chrome120"
         )
         if resp.status_code == 418:
-            raise Exception(f"WAF blocked IP, need proxy rotation")
+            raise Exception("WAF blocked the request; stop instead of rotating IPs")
         return resp.json()
 ```
 
@@ -305,12 +305,9 @@ class LandchinaSpider:
 ```python
 from playwright.sync_api import sync_playwright
 
-def fetch_via_browser(start_date, end_date, proxy=None):
+def fetch_via_browser(start_date, end_date):
     with sync_playwright() as p:
-        browser = p.chromium.launch(
-            headless=True,
-            proxy={"server": proxy} if proxy else None
-        )
+        browser = p.chromium.launch(headless=True)
         page = browser.new_page()
         # 先访问主站建立 WAF 信任
         page.goto("https://www.landchina.com/", wait_until="networkidle")
@@ -335,23 +332,21 @@ def fetch_via_browser(start_date, end_date, proxy=None):
         return result
 ```
 
-### 6.4 方案 C: 利用首次 WAF 宽容窗口
+### 6.4 触发拦截后的处置
 
-观察到的规律: 新 IP 的首次 API 请求会被 WAF 放行。可以:
-```python
-# 每次使用新代理发起首次请求
-# 每次请求都切换代理 IP
-# 保持低频（1-2 req/s），避免触发行为分析
-```
+观察到的规律：新 IP 的首次 API 请求可能被 WAF 放行，但 2-3 次后会被行为画像标记。正确做法：
+
+- 立即停止请求，不通过更换 IP/出口继续尝试。
+- 记录响应特征（418、事件 ID、Cookie）用于研究。
+- 仅在被授权且必要时做单次验证，避免对目标造成压力。
 
 ### 6.5 注意事项
 
 1. **按天分片**: 每天数据量 500-2000 条，按天查询避免 6000 条截断
-2. **代理质量**: 需要住宅代理，数据中心 IP 更容易被标记
-3. **请求频率**: 控制频率避免触发频率限制（建议 1-2 req/s）
-4. **Hash 生成**: 虽不校验，建议保持以应对未来更新
-5. **反调试**: 用 API 直连 + 代理方案后，完全不需要关心前端反调试
-6. **WAF 封锁恢复**: 被封锁的 IP 可能需要数小时才能恢复
+2. **请求频率**: 控制频率避免触发频率限制（建议 1-2 req/s）
+3. **Hash 生成**: 虽不校验，建议保持以应对未来更新
+4. **反调试**: API 直连验证时无需关心前端反调试
+5. **WAF 封锁恢复**: 被封锁的 IP 可能需要数小时才能恢复；应停止而非绕过
 
 ---
 

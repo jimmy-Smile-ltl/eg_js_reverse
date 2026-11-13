@@ -118,7 +118,7 @@ SIG_EXPECT = "1BFA0E32D1C9154840E9C2F7CC2AED59"
 
 # 3. 定制 AES 浏览器实测期望值 (2026-06-29 对照实验: 固定 key, CryptoJS 原始模块输出)
 AES_FIXED_KEY = "5SO2VCRF8O81PJH3"
-AES_PLAINTEXT = '{"mobile":"13800000000"}'
+AES_PLAINTEXT = '{"mobile":"13800000000"}'  # 示例号码，非真实用户
 AES_EXPECT = "f9760d77e49999a8274512b7d84f1cf342cc47734e0ad37c99ff41bd17927d86"
 
 
@@ -153,7 +153,7 @@ def main() -> None:
                                     "1u0fIr3ZU0xe2Znq3L3dY6xw", params=AES_EXPECT)
     body = json.loads(req["body"])
     ok = (req["url"].startswith("https://gateway.kugou.com/v8/send_mobile_code?")
-          and "signature=" in req["url"] and body["mobile"] == "13********8"
+          and "signature=" in req["url"] and body["mobile"] == "13********0"
           and len(body["pk"]) == 256 and body["params"] == AES_EXPECT)
     check(ok, "request assembly", f"(url len {len(req['url'])}, body len {len(req['body'])})")
 

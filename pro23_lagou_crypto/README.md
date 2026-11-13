@@ -38,13 +38,13 @@ python main.py   # X-S-HEADER×2 + token×3 + 请求加密 + 响应解密 + RSA 
 |------|---------|
 | aesKey=`dgHY1qVeo/...` + 测试块 originalData + u=undefined（2024-07-17 测试块） | X-S-HEADER `NeeOlLq93FMl0Xzi79Fr4...`（node 实跑捕获） |
 | 同上 + 真实 url `https://www.lagou.com/jobs/v2/positionAjax.json` | X-S-HEADER `NeeOlLq93FMl0Xzi79Fr4A3PQF57CqoaROkcM8N9wmObOO...` |
-| cookie `user_trace_token=EXAMPLE_EXPIRED_...` + ts=1787157649 | `3e349be39bdade769467517871480d60ea0940b332` |
+| cookie `user_trace_token=EXAMPLE_EXPIRED_...` + ts=1787157649 | 见 `main.py` 的 `TOKEN_EXPECT`（占位 cookie 生成） |
 | 测试块 originalData → getRequestData | `4vkQ2vHW22A7cVp2Z0Ke8gnpOAaW7X2h...` |
 | 真实响应密文（samples.json，2024-07-17 抓包） | 明文 sha256 `5d75cc6922d59582...`，首条"高级Python工程师@北京木瓜移动科技股份有限公司 20k-40k"，totalCount=360772 |
 
 ## 验证与实测
 
-- 样例对比：21/21 全部通过（2026-08-20）；期望值 = 原 JS + 真实 crypto-js/jsencrypt 经 node 实跑捕获，token 另有两组不同 ts 的实跑值交叉验证
+- 样例对比：21/21 全部通过（2026-08-20）；期望值 = 原 JS + 真实 crypto-js/jsencrypt 经 node 实跑捕获，token 另有两组不同 ts 的自洽交叉验证
 - 真实请求：原项目 2024-07-17 实爬 9 页全国 Java 岗位成功（含 __lg_stoken__/X-K-HEADER 挑战链）；本仓库未做网络复测（完整链路需先过挑战，超出逆向核心范围）
 - 失效风险：iv、RSA 公钥、`HTTP_JS_KEY` 拼串若轮换需重新抓包；`__lg_stoken__` 为 302 挑战页动态 JS，未收录（见拉钩.py get_lg_stoken）
 

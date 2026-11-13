@@ -26,7 +26,8 @@
   - X-S 编码必须是 JSON.stringify 原样 → 自定义 base64, 不能 URL 编码 (quote 会导致 406!)
   - cookie 中 websectiga/sec_poison_id/ets/loadts 新旧均可
 
-依赖: 本地浏览器 RPC 服务 (rpc_server.py, 127.0.0.1:8899) 提供 /mns 生成 x3
+依赖: 本地浏览器 RPC 服务 (rpc_server.py) 提供 /mns 生成 x3；
+      地址由环境变量 XHS_RPC_URL 指定（默认 127.0.0.1:8899），不要写入仓库配置。
 """
 import base64
 import hashlib
@@ -50,8 +51,8 @@ ARTIFACT_VERSION = '6.46.1'
 APP_ID = 'xhs-pc-web'
 OS_SYSTEM = 'Windows'
 
-RPC_URL = 'http://127.0.0.1:8899'
-X3_REPLAY_FALLBACK = None  # 可填入一个已抓取的 mns0301 x3 作为兜底
+RPC_URL = _os.environ.get('XHS_RPC_URL', 'http://127.0.0.1:8899')
+X3_REPLAY_FALLBACK = None  # 不要填入真实 token；仅本地调试时临时使用
 
 
 def custom_b64encode(b: bytes) -> str:

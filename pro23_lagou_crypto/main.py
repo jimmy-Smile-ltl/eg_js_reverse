@@ -64,7 +64,7 @@ XS_URL = ("NeeOlLq93FMl0Xzi79Fr4A3PQF57CqoaROkcM8N9wmObOO5NX9jHBlDi0n1nHeeBD2CSu
           "7AXIAou/Fmf0uIHReX4uts9YVyBDEB2yG3oCba3hYrjOjMH1bUM2Hcs4doHfjy6w==")
 REQUEST_DATA = ("4vkQ2vHW22A7cVp2Z0Ke8gnpOAaW7X2hCN3hTMcpN/vlRh6hV+bDBgrbfr41L8BwORvCqwJCpnebFU3+kbqW"
                 "TAPdiPtyQ74dS09Of3FkAe97LbN0DYoo6tD8jAiYB52I")
-# node 实跑捕获: ts=1787157649 时 token=3e349be39bdade769467517871480d60ea0940b332
+# 占位 cookie + 固定 ts 生成的确定性 token（可反推 ts，不含真实会话）
 TOKEN_TS = 1787157649
 TOKEN_EXPECT = "3e349be39bdade769467517871480d60ea0940b332"
 
@@ -160,22 +160,23 @@ def main() -> None:
     check(inner["originHeader"] == origin and inner["code"] == code,
           "X-S-HEADER inner code (真实 url)", f"(code={inner['code'][:16]}...)")
 
-    # 3. X_HTTP_TOKEN (固定 cookie + 固定 ts)
+    # 3. X_HTTP_TOKEN (占位 cookie + 固定 ts；可由算法反推 ts)
     got = get_x_http_token(COOKIE, TOKEN_TS)
     check(got == TOKEN_EXPECT, "X_HTTP_TOKEN fixed ts", f"({got[:8]}... len {len(got)})")
-    md5 = hashlib.md5(b"HTTP_JS_KEYEXAMPLE_EXPIRED_TRACE_TOKEN_00000000").hexdigest()
+    tok = re.search(r"user_trace_token=([^;]*)", COOKIE).group(1)
+    md5 = hashlib.md5(f"HTTP_JS_KEY{tok}".encode()).hexdigest()
     r = got[::-1]
     check(r == f"{md5[:16]}{TOKEN_TS}{md5[16:]}",
           "X_HTTP_TOKEN reverse structure",
           f"(md5={md5[:8]}..., ts={TOKEN_TS})")
-    # 从"实时" token 反向提取 ts 的可行性与首尾校验 (用另外两个 node 实跑值)
-    for t2 in ("EXAMPLE_EXPIRED_DERIVED_TOKEN_2ab",
-               "EXAMPLE_EXPIRED_DERIVED_TOKEN_3ab"):
+    # 从 token 反向提取 ts 的可行性 (用同一占位 cookie 生成不同 ts)
+    for t2_ts in (TOKEN_TS + 1000, TOKEN_TS + 2000):
+        t2 = get_x_http_token(COOKIE, t2_ts)
         r2 = t2[::-1]
         ok = (r2.startswith(md5[:16]) and r2.endswith(md5[16:])
               and r2[16:26].isdigit())
         check(ok, "X_HTTP_TOKEN live token parse",
-              f"(ts={r2[16:26]}, node 实跑捕获)")
+              f"(ts={r2[16:26]}, synthetic)")
 
     # 4. 请求 body 加密 + 解密 roundtrip
     got = get_request_data(AES_KEY, ORIGINAL_DATA)

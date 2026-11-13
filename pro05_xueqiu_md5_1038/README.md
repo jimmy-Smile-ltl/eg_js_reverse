@@ -42,8 +42,8 @@ py main.py --node    # +3 项：同随机序列/时间，JS 与 Python 逐字节
 
 | 输入（wafToken / api / now_ms） | 期望输出 |
 |------|---------|
-| `EXAMPLE_WAF_TOKEN...E0=` / `list.json` / `1788025000123` | `222029ad07-t20A/...dT2b`（194） |
-| `EXAMPLE_WAF_TOKEN...E0=` / `list.json?source=fund_public&page=1` / `1788036000456` | `222029ad07-IvcA...a_P8`（200） |
+| `EXAMPLE_...=` / `list.json` / `1788025000123` | `222029ad07-I28t...zT2b`（182） |
+| `EXAMPLE_...=` / `list.json?source=fund_public&page=1` / `1788036000456` | `222029ad07-TK9T...tBcA/`（184） |
 | `EXPIRED_TEST_TOKEN...=` / `list.json` / `1788047000789` | `222029ad07-2gfI...AB5`（158） |
 
 ## 验证与实测
@@ -51,7 +51,7 @@ py main.py --node    # +3 项：同随机序列/时间，JS 与 Python 逐字节
 - 离线：`py main.py` 10/10；3 组向量由固定随机序列（48 次调用）+ 固定时间生成，逐字节一致
 - 交叉：`py main.py --node` 13/13，同一序列下 JS 生成结果与 Python 完全相同（含 mc1/mc2/mc3/mc4/mc7）
 - 线上：经典归档 2026-08-16 补环境方案签名被服务端接受（页面 200 + API 200）；RPC 方案 100%
-- 样例：`wafToken`/`serverTs` 为 2026-08 已过期抓包值，仅用于算法比对，不可直接回放
+- 样例：`wafToken` 为占位值、`serverTs` 为已过期值，仅用于算法比对，不可直接回放
 
 ## 备注
 

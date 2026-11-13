@@ -2,6 +2,8 @@
 
 本文件指导 Claude Code 在本仓库内新增/维护 JS 逆向复现项目。规范原则：**最简化、可复现、文档清晰**。
 
+> 完整规范见 [PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)（合规红线、准入过滤、脱敏、版权、导入 SOP、发布检查清单）。本文件是速查版；冲突时以完整规范为准。
+
 ## 仓库使命
 
 从 Spider 仓库的实战项目中提取 JS 逆向**核心复现**：加密入口 → 算法还原 → 可运行验证的完整链路。只收录逆向本身，**不收录**工程化内容（数据库、断点续爬、代理、日志、下载器等——那些属于 `../jimmySpider` 框架的范畴）。
@@ -13,7 +15,8 @@
 ```
 eg_js_reverse/
 ├── README.md             # 总索引：项目清单 + 迁移映射 + 规范速览
-├── CLAUDE.md             # 本文件
+├── PROJECT_GUIDELINES.md # 完整项目整理规范（本仓库最高整理规范）
+├── CLAUDE.md             # 本文件（速查）
 ├── _template/            # 新项目模板（复制改名，不直接修改）
 └── pro{NN}_{site_key}/   # 项目实例，NN 为两位数序号
     ├── README.md         # 必填：项目文档（六段式，≤60 行）
@@ -54,6 +57,13 @@ eg_js_reverse/
 - 随机调用顺序是算法的一部分（如 `m4 16 次 → F 31 次 → mc7 1 次`），必须逐次对齐；参考 `pro05/reference/node_deterministic.js`
 - 抓包样例统一脱敏：删除 cookie/token/用户标识，或替换为**已过期占位值**；只保留签名计算所需参数与期望输出，确保不可用于真实请求
 - 第三方 SDK/原版 JS 随仓库归档时，README 与根索引注明权利方与「仅学习研究」，禁止商用或二次分发
+
+## 敏感配置（绝不入库）
+
+- 代理地址/端口/账号、LLM API Key/Base URL/模型、MCP 配置、`.env`、本地 settings 一律放仓库外。
+- 代码只通过环境变量读取；示例使用 `YOUR_API_KEY` / `http://proxy.example:8080` 等占位符。
+- `.gitignore` 已覆盖 `.env*`、`*.local`、`.claude/`、`.mcp.json`、`secrets/`、`proxy*.yml/json`、`llm*.yml/json`、`*.pem`、`*.key`。
+- 发现泄露：先轮换凭据，再按 `PROJECT_GUIDELINES.md` §12.3 重写历史。
 
 ## 复现代码标准（main.py）
 

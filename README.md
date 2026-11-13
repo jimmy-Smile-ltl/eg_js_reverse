@@ -1,107 +1,219 @@
-# JS 逆向复现集 (eg_js_reverse)
+<div align="center">
+  <img src="assets/banner.svg" alt="eg_js_reverse — 42 reproducible JS reverse-engineering cases" width="100%">
+  <h1>JS 逆向复现集</h1>
+  <p><strong>把 JS 逆向拆成可复现的最小链路</strong></p>
+  <p>加密入口 → 算法还原 → 离线验证 · 42 个实战样本</p>
+  <p>
+    <img src="https://img.shields.io/badge/projects-42-0ea5e9?style=flat-square" alt="42 projects">
+    <img src="https://img.shields.io/badge/offline-100%25-22c55e?style=flat-square" alt="offline verification">
+    <img src="https://img.shields.io/badge/license-MIT-8b5cf6?style=flat-square" alt="MIT license">
+    <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
+  </p>
+  <p>
+    <a href="#快速开始">快速开始</a> ·
+    <a href="#精选项目">精选项目</a> ·
+    <a href="#完整索引">完整索引</a> ·
+    <a href="#方法与规范">方法与规范</a> ·
+    <a href="#合规与边界">合规边界</a>
+  </p>
+</div>
 
-从实战爬虫项目中提取的 **JS 逆向核心复现**：每个项目最小化呈现「加密入口 → 算法还原 → 可运行验证」的完整链路。原则：**最简化、可复现、文档清晰**——去掉工程化外壳（数据库、断点续爬、代理、日志），只保留逆向技术本身。
+> [!IMPORTANT]
+> **合规声明（必读）**：本仓库仅用于**个人学习、学术研究与授权安全测试**。所涉网站、SDK、数据的版权归其原始权利人所有；样例均为已过期、脱敏或固定随机源的测试向量。请遵守目标站点服务条款与适用法律，禁止商业爬取或任何恶意用途。详见 [LICENSE](LICENSE)。
 
-> ⚠️ **合规声明（必读）**：本仓库仅用于**个人学习、学术研究与授权安全测试**。所涉网站、SDK、数据的版权归其原始权利人所有；抓包样例均为已过期的测试向量。请遵守目标站点的服务条款与适用法律，禁止用于商业爬取或任何恶意用途。详见 [LICENSE](LICENSE)。
+---
+
+## 为什么值得看
+
+> 不是又一个爬虫仓库：每个目录都回答同一组问题——**入口在哪、算法是什么、如何证明它对**。
+
+| | |
+|---|---|
+| 🧩 **最小复现** | 一个站点只保留一条核心链路；`main.py` 单文件、标准库优先、默认离线 |
+| 🧪 **离线自证** | 每个项目内置 ≥3 组样例，`py main.py` 输出 PASS/FAIL，失败即 `exit(1)` |
+| 🧠 **算法拆解** | 不止给结果：记录入口定位、还原步骤、JS→Python 差异与失效边界 |
+| 🛡️ **合规边界** | 不收录工程化爬虫、代理池、验证码打码；敏感配置与凭据不进入仓库 |
 
 ## 快速开始
 
 ```bash
-# 每个项目独立可跑，一条命令验证
-cd pro07_aqistudy_encrypt && py main.py    # 示例：10/10 通过（Linux/macOS 用 python）
+git clone https://github.com/jimmy-Smile-ltl/eg_js_reverse.git
+cd eg_js_reverse
+cd pro42_safeline_challenge && py main.py --wasm     # Windows
+# Linux/macOS: python3 main.py --wasm
 ```
 
-- 运行**不依赖网络**：所有样例为内置测试向量，输出即验证结果
-- 依赖：Python 标准库优先，第三方 ≤ 2 个（见各项目 README）
-- 真实请求验证与抓包方法写在各项目 README「验证与实测」章节
+- **零网络**：默认样例全部离线运行，输出即验证结果
+- **依赖克制**：Python 标准库优先，第三方 ≤ 2 个（见项目 README）
+- **可选备份路线**：`--node` / `--wasm` / `--live`，不进入默认主流程
+- **环境**：Python 3.10+；Windows 用 `py`，其他平台用 `python3`
 
-## 项目清单
+## 精选项目
 
-### 参数加密
+| 项目 | 为什么值得读 | 证据 |
+|------|-------------|------|
+| [pro42 · 长亭雷池 SafeLine](pro42_safeline_challenge/) | 468 协议 + 911B `calc.wasm`，纯 Python 还原并走通真实挑战 | ✅ 9/9；wasm 10/10；线上 200 |
+| [pro37 · 小红书 mns x3](pro37_xhs_mns_x3/) | 288KB JSVMP + 自定义 XTEA + F6 静态置换 | ✅ 4/4；VM 10/10 |
+| [pro36 · 抖音 a_bogus](pro36_douyin_abogus/) | SDK 字节码 VM + SM3 国密 + RC4 变体 + 双字母表 | ✅ 3/3；对拍 16/16 |
+| [pro28 · 今日头条 a_bogus](pro28_toutiao_abogus/) | bdms VM 还原为 148 字符纯算法，旧版 Node 留作备份 | ✅ 7/7；Node 10/10 |
+| [pro18 · 拼多多 anti_content](pro18_pinduoduo_anticontent/) | 22 collector 序列化 + zlib level 6 + budget 扰码 base64 | ✅ 20/20；Node 23/23 |
+| [pro05 · 雪球 md5__1038](pro05_xueqiu_md5_1038/) | 随机 XOR + 自定义 LZW，Python/Node 固定随机源逐字节对拍 | ✅ 13/13 |
+| [pro23 · 拉钩 X-S-HEADER](pro23_lagou_crypto/) | 签名 + token + 请求加密 + 响应解密 + RSA 结构，一条完整链 | ✅ 21/21 |
+| [pro33 · BOSS直聘 __zp_stoken__](pro33_boss_zhipin_jsvmp/) | 双层 JSVMP + 186 项环境指纹 + UTF-8 变体编码 | ✅ 3/3；线上 5/5 |
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro12](pro12_kugou_login_crypto/) | 酷狗音乐 登录加密 | MD5 salt 签名 + RSA-1024 NoPadding（反转+小端）+ 定制 CryptoJS AES | ✅ 8/8 通过 |
-| [pro10](pro10_yingdong_ws_aes/) | 颍东先锋网 网盟 WAF | AES-128-CBC 会话密钥派生（etag→priKey 链）+ WebSocket 指令帧协议 | ✅ 8/8 通过 |
-| [pro09](pro09_nmg_nongji_sm/) | 内蒙古农机补贴 国密 | SM4-ECB + SM3 签名 + RSA-512 私钥引导 SM4 key | ✅ 8/8 通过 |
-| [pro08](pro08_wangyiyun_weapi/) | 网易云音乐 weapi | 双层 AES-128-CBC + RSA-1024 零填充小端 | ✅ 7/7 通过 |
-| [pro07](pro07_aqistudy_encrypt/) | 空气质量平台 双重加密 | MD5 签名 + Base64→AES-CBC→DES-CBC 解密链 | ✅ 10/10 通过 |
-| [pro06](pro06_1hai_aes/) | 一嗨租车 全站 AES 通道 | AES-256-CFB + PKCS7 + 自定义 Base64 | ✅ 8/8 通过 |
-| [pro05](pro05_xueqiu_md5_1038/) | 雪球网 md5__1038 签名 | SHA1 截取 + 随机 XOR + 环境 bit + 自定义 LZW（纯算/Node 双实现） | ✅ 13/13 通过（Node 逐字节） |
-| [pro04](pro04_shzz_slide_abc/) | 社会组织平台 滑块 a/b/c | RSA-1024 + 双重 base64 + OpenCV 缺口识别 | ✅ 10/10 通过 |
-| [pro18](pro18_pinduoduo_anticontent/) | 拼多多 anti_content | 22 collector 序列化 + zlib level 6 + budget 扰码 base64；纯算法 + 原版引擎双路线 | ✅ 20/20 通过（Node 23/23） |
-| [pro26](pro26_nanhang/) | 南航 机票搜索 encryptArgs | RSA+RC4 请求加密（未逆向，浏览器自动化绕过）+ requestId 参数模板还原 | 🔒 3/3 通过 |
-| [pro27](pro27_cls_sign/) | 财联社电报 sign | 参数大写排序 + 递归序列化 + SHA1→MD5 双重哈希 | ✅ 5/5 通过 |
-| [pro28](pro28_toutiao_abogus/) | 今日头条 a_bogus | bdms VM 还原为纯算法（148 字符）+ 旧版 Node 补环境备份 + 线上实测 | ✅ 7/7 通过（Node 10/10） |
-| [pro20](pro20_wipo_aes416/) | 全球商标数据库 CryptoJS | CryptoJS AES 完整还原（S-box/key schedule）+ 解密/重加密 + PKCE | ✅ 11/11 通过 |
-| [pro21](pro21_birdreport_sign/) | 观鸟记录中心 | 签名链 + AES 解密 + RSA 结构 + 详情 URL 派生 | ✅ 13/13 通过 |
-| [pro22](pro22_baidu_index/) | 百度指数 数据解密 | 单表替换密码（真实三元组对照） | ✅ 7/7 通过 |
-| [pro23](pro23_lagou_crypto/) | 拉钩 X-S-HEADER | X-S-HEADER 签名 + token 加密 + 请求加密/响应解密 + RSA 结构 | ✅ 21/21 通过 |
-| [pro38](pro38_qunar_bella/) | 去哪儿 Bella 签名 | HmacSHA1 双层链（v1 含 cipher / v2 不含）+ 65 字符自定义 base64 反转 | ✅ 3/3 通过 |
-| [pro39](pro39_xiaozhu_gatesign/) | 小猪民宿 gatesign | 参数排序 + 编码后 6 组可读化替换 + HMAC-SHA1(md5(url))，两套调用约定 | ✅ 6/6 通过 |
-| [pro40](pro40_tujia_revelio/) | 途家 Revelio 风控报文 | 29 项字符串表轮转 26 次还原 AES-GCM 密钥 + 指纹模板时间平移 | ✅ 4/4 通过 |
-| [pro41](pro41_fliggy_mtop/) | 飞猪 MTOP 签名 | md5(token&t&appKey&data) + token 握手 + args 包裹 payload | ✅ 4/4 通过 |
+## 完整索引
 
-### 混淆还原 / 反调试
+> 42 个项目按技术类型分组。点击分组展开；每个目录内都有独立的六段式 README。
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro17](pro17_aiqicha_abclite/) | 爱企查 ABCLite-2061 | `\xHH` 双重转义字符串还原 + eval 劫持栈分析反调试 + 7 类指纹检测 | ✅ 42/42 通过 |
-| [pro13](pro13_yinghua_jsjiami/) | 樱花动漫 jsjiami v7 | 自定义 base64（小写字母表）+ RC4 字符串表 + 5 层反调试判定 | ✅ 29/29 通过 |
-| [pro29](pro29_mps_ast_encode/) | 公安部 编码链 + AST 教学 | encode64/t/u/a 编码链复现 + Babel AST 反混淆教学 demo | ✅ 5/5 通过 |
+### 项目全景
 
-### WAF 逆向
+| 分类 | 数量 | 关键词 |
+|------|:---:|--------|
+| 参数加密 | 20 | Crypto · 签名 · 请求/响应 |
+| 混淆还原 / 反调试 | 3 | AST · jsjiami · eval |
+| WAF 逆向 | 6 | 468/521 · Cookie · Turnstile |
+| WASM / VM 保护 | 9 | JSVMP · h5st · XTEA |
+| 环境指纹 / 补环境 | 1 | ConstID |
+| 字体反爬 | 1 | WOFF · PUA |
+| 内容加密 | 2 | JS 包装 · 正文解密 |
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro14](pro14_landchina_antidebug/) | 中国土地市场网 CloudWAF | 渐进式行为画像 + disable-devtool 七检测器 + MD5 Hash 头 | ✅ 34/34 通过 |
-| [pro01](pro01_jiasule_521/) | 加速乐 521 挑战 | `go()` 数据暴力双循环 + 标准 hash 掉包 | ✅ 3/3 通过 |
-| [pro02](pro02_shyq_yunsuo/) | 云锁 WAF 三步挑战 | 字符级 hex 编码 + `security_verify_data` cookie 链 | ✅ 4/4 通过 |
-| [pro03](pro03_opticsjournal_acw/) | 阿里云 WAF `acw_sc__v2` | 固定置换表 unsbox + 固定 key 异或 | ✅ 4/4 通过 |
-| [pro32](pro32_oatd_cloudflare/) | oatd.org Cloudflare Turnstile 应对 | cf_clearance Cookie 刷新五方案 + Turnstile DOM 状态机 + 拟人贝塞尔轨迹 | ✅ 13/13 通过（真实刷新需浏览器） |
+<details open>
+<summary><strong>参数加密</strong> · 20 个项目</summary>
 
-### WASM / VM 保护
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro04 · 社会组织平台滑块](pro04_shzz_slide_abc/) | RSA-1024 + 双重 base64 + 滑块缺口识别 | ✅ 10/10 |
+| [pro05 · 雪球 md5__1038](pro05_xueqiu_md5_1038/) | SHA1 截取 + 随机 XOR + 环境 bit + 自定义 LZW | ✅ 13/13 |
+| [pro06 · 一嗨租车](pro06_1hai_aes/) | AES-256-CFB + PKCS7 + 自定义 Base64 | ✅ 8/8 |
+| [pro07 · 空气质量平台](pro07_aqistudy_encrypt/) | MD5 签名 + Base64→AES-CBC→DES-CBC 解密链 | ✅ 10/10 |
+| [pro08 · 网易云音乐 weapi](pro08_wangyiyun_weapi/) | 双层 AES-128-CBC + RSA-1024 零填充小端 | ✅ 7/7 |
+| [pro09 · 内蒙古农机补贴](pro09_nmg_nongji_sm/) | SM4-ECB + SM3 签名 + RSA-512 引导 SM4 key | ✅ 8/8 |
+| [pro10 · 颍东先锋网](pro10_yingdong_ws_aes/) | AES-128-CBC 会话密钥派生 + WebSocket 指令帧 | ✅ 8/8 |
+| [pro12 · 酷狗音乐](pro12_kugou_login_crypto/) | MD5 salt + RSA-1024 NoPadding + 定制 CryptoJS AES | ✅ 8/8 |
+| [pro18 · 拼多多 anti_content](pro18_pinduoduo_anticontent/) | 22 collector 序列化 + zlib + budget 扰码 base64 | ✅ 20/20 |
+| [pro20 · 全球商标数据库](pro20_wipo_aes416/) | CryptoJS AES 完整还原 + 解密/重加密 + PKCE | ✅ 11/11 |
+| [pro21 · 观鸟记录中心](pro21_birdreport_sign/) | 签名链 + AES 解密 + RSA 结构 + 详情 URL 派生 | ✅ 13/13 |
+| [pro22 · 百度指数](pro22_baidu_index/) | 单表替换密码（真实三元组对照） | ✅ 7/7 |
+| [pro23 · 拉钩 X-S-HEADER](pro23_lagou_crypto/) | 签名 + token + 请求加密/响应解密 + RSA 结构 | ✅ 21/21 |
+| [pro26 · 南航 encryptArgs](pro26_nanhang/) | RSA+RC4 未逆向 + requestId 参数模板还原 | 🔒 3/3 |
+| [pro27 · 财联社 sign](pro27_cls_sign/) | 参数大写排序 + 递归序列化 + SHA1→MD5 | ✅ 5/5 |
+| [pro28 · 今日头条 a_bogus](pro28_toutiao_abogus/) | bdms VM → 148 字符纯算法 + Node 备份 | ✅ 7/7 |
+| [pro38 · 去哪儿 Bella](pro38_qunar_bella/) | HmacSHA1 双层链 + 65 字符自定义 base64 | ✅ 3/3 |
+| [pro39 · 小猪 gatesign](pro39_xiaozhu_gatesign/) | 参数排序 + 可读化替换 + HMAC-SHA1(md5(url)) | ✅ 6/6 |
+| [pro40 · 途家 Revelio](pro40_tujia_revelio/) | 字符串表轮转还原 AES-GCM 密钥 + 指纹时间平移 | ✅ 4/4 |
+| [pro41 · 飞猪 MTOP](pro41_fliggy_mtop/) | md5(token&t&appKey&data) + token 握手 | ✅ 4/4 |
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro16](pro16_gdtv_wasm/) | 荔枝网 gdtv API 认证 | 扣 webpack chunk + 补环境 + 固定时间戳参与项实验 | ✅ 11/11 通过 |
-| [pro15](pro15_mihuashi_wasm/) | 米画师 WASM 签名 | Rust wasm-bindgen 64KB 模块 + 补环境 + 固定 nonce 确定性验证 | ✅ 11/11 通过 |
-| [pro11](pro11_scrape_wasm_sign/) | scrape.center WASM 签名 | wasm2wat 反汇编直出公式（232B 教学案例） | ✅ 10/10 通过 |
-| [pro25](pro25_hainan_td/) | 海航 TrustDecision blackBox | WASM 指纹 SDK：payload 解析 + 会话 key 恢复（field3 XOR 流）+ import 对象映射 | 🔒 5/5 通过 |
-| [pro33](pro33_boss_zhipin_jsvmp/) | BOSS直聘 __zp_stoken__ | JSVMP 双层解释器 + 186 项环境指纹 + seed/ts 绑定与 UTF-8 变体编码 | ✅ 3/3 通过（线上 5/5） |
-| [pro34](pro34_jd_main_h5st/) | 京东主站 h5st v5.3 | 35 解释器 VM + 10 段结构 + seg7 编解码（变体哈希链未还原） | 🔒 3/3 通过 |
-| [pro35](pro35_jd_union_h5st/) | 京东联盟 h5st | 236KB stack VM + rev3/rev4 乱序 + seg8「加密实为编码」 | ✅ 3/3 通过（SDK 10/10 段） |
-| [pro36](pro36_douyin_abogus/) | 抖音 a_bogus | SDK 字节码 VM + SM3 国密 + RC4 变体 + 双字母表 Base64 | ✅ 3/3 通过（对拍 16/16） |
-| [pro37](pro37_xhs_mns_x3/) | 小红书 mns x3 | JSVMP + 自定义 XTEA + F6 静态置换 + 自定义字母表 | ✅ 4/4 通过（VM 10/10） |
+</details>
 
-### 环境指纹 / 补环境
+<details>
+<summary><strong>混淆还原 / 反调试</strong> · 3 个项目</summary>
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro24](pro24_chuanhang_constid/) | 川航 顶象 ConstID | `window.sss` 自定义字母表 base64 + json2 序列化 + 3 个 XOR 解码器 | ✅ 21/21 通过 |
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro13 · 樱花动漫 jsjiami](pro13_yinghua_jsjiami/) | 自定义 base64 + RC4 字符串表 + 5 层反调试 | ✅ 29/29 |
+| [pro17 · 爱企查 ABCLite](pro17_aiqicha_abclite/) | `\xHH` 双重转义 + eval 劫持栈分析 + 7 类指纹 | ✅ 42/42 |
+| [pro29 · 公安部编码链](pro29_mps_ast_encode/) | encode64/t/u/a 复现 + Babel AST 教学 demo | ✅ 5/5 |
 
-### 字体反爬
+</details>
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro30](pro30_dianping_font/) | 大众点评 字体反爬 | 动态 WOFF 字体 + PUA 码点混淆 → cmap/glyph 两级映射还原 | ⚠️ 7/7 通过（站点已改版） |
+<details>
+<summary><strong>WAF 逆向</strong> · 6 个项目</summary>
 
-### 内容加密
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro01 · 加速乐 521](pro01_jiasule_521/) | `go()` 数据暴力双循环 + 标准 hash 掉包 | ✅ 3/3 |
+| [pro02 · 云锁 WAF](pro02_shyq_yunsuo/) | 字符级 hex 编码 + `security_verify_data` cookie 链 | ✅ 4/4 |
+| [pro03 · 阿里云 WAF](pro03_opticsjournal_acw/) | `acw_sc__v2` 固定置换表 unsbox + 固定 key XOR | ✅ 4/4 |
+| [pro14 · 中国土地市场网](pro14_landchina_antidebug/) | CloudWAF 行为画像 + disable-devtool 七检测器 | ✅ 34/34 |
+| [pro32 · Cloudflare Turnstile](pro32_oatd_cloudflare/) | cf_clearance 刷新五方案 + DOM 状态机 + 贝塞尔轨迹 | ✅ 13/13 |
+| [pro42 · 长亭雷池 SafeLine](pro42_safeline_challenge/) | 468 → issue/calc/verify → JWT；calc.wasm 纯 Python | ✅ 9/9 |
 
-| 编号 | 项目 | 技术点 | 状态 |
-|------|------|--------|------|
-| [pro19](pro19_qdjiangzhiyun/) | 起点小说 正文解密 | br 压缩 + execjs 执行 JS 解密（纯算还原） | ✅ 通过 |
-| [pro31](pro31_tcl2024_jscontent/) | 天辰文学 JS 内容加密 | 章节响应体 = 可执行 JS 包装正文，判别器 + node 执行还原骨架 | ⚠️ 3/3 通过（站点已死亡，算法未还原） |
+</details>
 
-> 验证码类项目（极验/顶象/网易易盾等）与瑞数 WAF 专项不在本仓库收录范围内。
+<details>
+<summary><strong>WASM / VM 保护</strong> · 9 个项目</summary>
 
-### 在线旅游 OTA 专题
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro11 · scrape.center](pro11_scrape_wasm_sign/) | wasm2wat 反汇编直出公式（232B 教学案例） | ✅ 10/10 |
+| [pro15 · 米画师 WASM](pro15_mihuashi_wasm/) | Rust wasm-bindgen 64KB + 补环境 + 固定 nonce | ✅ 11/11 |
+| [pro16 · 荔枝网 gdtv](pro16_gdtv_wasm/) | 扣 webpack chunk + 补环境 + 固定时间戳实验 | ✅ 11/11 |
+| [pro25 · 海航 TrustDecision](pro25_hainan_td/) | WASM 指纹 SDK：payload 解析 + 会话 key 恢复 | 🔒 5/5 |
+| [pro33 · BOSS直聘 JSVMP](pro33_boss_zhipin_jsvmp/) | 双层解释器 + 186 项环境指纹 + UTF-8 变体编码 | ✅ 3/3 |
+| [pro34 · 京东主站 h5st](pro34_jd_main_h5st/) | 35 解释器 VM + 10 段结构 + seg7 编解码 | 🔒 3/3 |
+| [pro35 · 京东联盟 h5st](pro35_jd_union_h5st/) | 236KB stack VM + rev3/rev4 乱序 + seg8 编码 | ✅ 3/3 |
+| [pro36 · 抖音 a_bogus](pro36_douyin_abogus/) | SDK 字节码 VM + SM3 + RC4 变体 + 双字母表 | ✅ 3/3 |
+| [pro37 · 小红书 mns x3](pro37_xhs_mns_x3/) | JSVMP + 自定义 XTEA + F6 静态置换 | ✅ 4/4 |
 
-来自 `spider research/OTA 在线旅游/` 的四站逆向成果，全部走「纯算法签名 + `curl_cffi` 回放」路线（无浏览器 RPC）：[pro38](pro38_qunar_bella/) 去哪儿 Bella · [pro39](pro39_xiaozhu_gatesign/) 小猪 gatesign · [pro40](pro40_tujia_revelio/) 途家 Revelio · [pro41](pro41_fliggy_mtop/) 飞猪 MTOP。打分型 WAF（DataDome 等）无可提取签名，不在此列。
+</details>
 
-## 经典归档迁移
+<details>
+<summary><strong>环境指纹 / 补环境</strong> · 1 个项目</summary>
 
-`经典 不开源/` 下 8 个实战项目已整理进本仓库：5 个新站点 + 3 个同站点升级。迁移范围为**纯算法复现、≥3 组样例与核心参考脚本**；完整工具链、全部 SDK 与抓包原始数据不迁移。
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro24 · 川航顶象 ConstID](pro24_chuanhang_constid/) | `window.sss` 自定义 base64 + json2 + 3 个 XOR 解码器 | ✅ 21/21 |
+
+</details>
+
+<details>
+<summary><strong>字体反爬</strong> · 1 个项目</summary>
+
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro30 · 大众点评字体](pro30_dianping_font/) | 动态 WOFF + PUA 码点 → cmap/glyph 两级映射 | ⚠️ 7/7（站点已改版） |
+
+</details>
+
+<details>
+<summary><strong>内容加密</strong> · 2 个项目</summary>
+
+| 项目 | 技术看点 | 验证 |
+|------|---------|------|
+| [pro19 · 起点小说](pro19_qdjiangzhiyun/) | br 压缩 + execjs 执行 JS 解密 | ✅ 9/9 |
+| [pro31 · 天辰文学](pro31_tcl2024_jscontent/) | 章节响应体 = 可执行 JS 包装正文 | ⚠️ 3/3（站点已死亡） |
+
+</details>
+
+> 验证码厂商专项与瑞数 WAF 专项不在本仓库新增收录范围；历史自建滑块样例（pro04）作为例外保留。
+
+## OTA 专题
+
+来自 `spider research/OTA 在线旅游/` 的四站纯算法签名，全部走「签名 + `curl_cffi` 回放」路线，无浏览器 RPC：
+
+| 站点 | 签名看点 | 入口 |
+|------|---------|------|
+| 去哪儿 | Bella：HmacSHA1 双层链 + 65 字符 base64 反转 | [pro38](pro38_qunar_bella/) |
+| 小猪民宿 | gatesign：参数排序 + 可读化替换 + HMAC-SHA1(md5(url)) | [pro39](pro39_xiaozhu_gatesign/) |
+| 途家 | Revelio：字符串表轮转 26 次还原 AES-GCM 密钥 | [pro40](pro40_tujia_revelio/) |
+| 飞猪 | MTOP：md5(token&t&appKey&data) + token 握手 | [pro41](pro41_fliggy_mtop/) |
+
+## 方法与规范
+
+```text
+请求分析 → 入口定位 → 代码分析 → 解混淆 → 算法还原 → 验证测试
+```
+
+每个项目都按同一套质量标准交付：
+
+| 你会得到 | 我们不做 |
+|---------|---------|
+| 可独立运行的 `main.py` + ≥3 组样例 | 数据库、代理、断点续爬等工程外壳 |
+| 入口定位与 JS→Python 差异说明 | 只有结论、没有验证过程的“黑盒脚本” |
+| 确定性向量 / wasm / Node 对拍 | 把随机签名结构合法当成算法正确 |
+| 失效边界、版本轮换与坑清单 | 真实 Cookie、Token、个人数据或本地配置 |
+
+- 完整规范：[PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)（合规红线 / 准入过滤 / 脱敏 / 版权 / 导入 SOP / 发布检查）
+- 新项目模板：[_template/](_template/)
+- Claude Code 速查：[CLAUDE.md](CLAUDE.md)
+- 技术标签：`encrypt` · `obfuscate` · `debug` · `waf` · `wasm` · `vm` · `env` · `font` · `captcha`
+
+## 归档与第三方
+
+<details>
+<summary><strong>经典归档迁移</strong> · 8 个项目</summary>
+
+`经典 不开源/` 下 8 个实战项目已整理进本仓库：5 个新站点 + 3 个同站点升级。迁移范围为纯算法复现、≥3 组样例与核心参考脚本；完整工具链、全部 SDK 与抓包原始数据不迁移。
 
 | 经典归档项目 | 去向 | 迁移内容 |
 |------|------|---------|
@@ -114,50 +226,47 @@ cd pro07_aqistudy_encrypt && py main.py    # 示例：10/10 通过（Linux/macOS
 | 今日头条-a_bogus签名-2026-09-02 | [pro28](pro28_toutiao_abogus/)（升级） | 148 字符纯算法替换旧版 Node 主线，SDK 留作备份 |
 | 雪球网-md5__1038-WAF签名-2026-08-16 | [pro05](pro05_xueqiu_md5_1038/)（升级） | 补齐归档未完成的纯算实现 + 确定性对拍向量 |
 
-## 技术分类
+</details>
 
-| 标签 | 含义 | 典型特征 |
-|------|------|---------|
-| `encrypt` | 参数加密 | MD5/SHA/AES/RSA/SM/自定义签名 |
-| `obfuscate` | 混淆还原 | OB/sojson/控制流平坦化/字符串数组 |
-| `debug` | 反调试 | debugger 检测/定时器/自校验 |
-| `waf` | WAF 逆向 | 瑞数/加速乐/Cloudflare/Akamai |
-| `wasm` | WASM 保护 | 导出函数、wasm2wat |
-| `vm` | VM 保护 | JSVMP、字节码解释器 |
-| `env` | 环境指纹/补环境 | Navigator/Canvas/WebGL 检测 |
-| `font` | 字体反爬 | WOFF 动态字体、PUA 码点、cmap/glyph 映射 |
+<details>
+<summary><strong>第三方文件与版权</strong> · 12 项</summary>
 
-## 新增项目规范
-
-- 目录：`pro{NN}_{站点关键词}/`，含 `README.md`（六段式文档）+ `main.py`（单文件复现）
-- 复现标准：一条命令跑通、依赖最少、内置 ≥3 组实战抓包样例自证、不依赖网络、注明失效边界
-- 新项目按 `_template/` 接入
-
-## 第三方文件与版权
-
-仓库内随项目附带以下第三方文件，版权归其原始权利人所有，仅以学习与研究目的归档（详见 [LICENSE](LICENSE) 附加条款）：
+以下文件版权归原始权利人所有，仅以学习与研究目的归档；如需商用或二次分发，请自行获取授权。完整说明见 [LICENSE](LICENSE)。
 
 | 项目 | 第三方文件 | 权利方 | 性质 |
 |------|-----------|--------|------|
-| [pro05](pro05_xueqiu_md5_1038/) | `md1038_generator.js` | 雪球网 | 签名算法逐行移植（原 webpack 函数） |
+| [pro05](pro05_xueqiu_md5_1038/) | `md1038_generator.js` | 雪球网 | 签名算法逐行移植 |
 | [pro12](pro12_kugou_login_crypto/) | `kugou_aes_module.js` / `rsa_ref.js` / `kg_aes_ref.js` | 酷狗音乐 | 登录加密模块原版 |
-| [pro13](pro13_yinghua_jsjiami/) | `player.js` / `player_clean.js` / `strings.json` | 樱花动漫 | jsjiami v7 混淆原版及解混淆中间产物 |
+| [pro13](pro13_yinghua_jsjiami/) | `player.js` / `player_clean.js` / `strings.json` | 樱花动漫 | jsjiami v7 原版与解混淆产物 |
 | [pro15](pro15_mihuashi_wasm/) | `mhs_fe_sign_bg.wasm` | 米画师 | Rust wasm-bindgen 签名模块 |
-| [pro16](pro16_gdtv_wasm/) | `vendor_w.js` | 荔枝网 | webpack 打包的 API 签名 SDK |
-| [pro17](pro17_aiqicha_abclite/) | `abclite-2061-s.original.js` / 解码产物 / `scripts/` | 百度 | ABCLite SDK（dlswbr.baidu.com 动态拉取） |
-| [pro18](pro18_pinduoduo_anticontent/) | `generator/` | 拼多多 | anti_content fbeZ 引擎原版 |
-| [pro28](pro28_toutiao_abogus/) | `bdms_browser.js` / `sdk-glue.js` / `runtime_bundler_52.js` | 字节跳动（今日头条） | 签名 SDK webpack 原版（其余 js 为自研补环境脚本） |
-| [pro36](pro36_douyin_abogus/) | `reference/sign_engine.js` | 字节跳动（抖音） | a_bogus 签名函数提取/移植版 |
-| [pro30](pro30_dianping_font/) | 12 个 `*.woff` / `*.npy` | 大众点评（美团） | 2022 年字体反爬抓包存档 |
-| [pro32](pro32_oatd_cloudflare/) | `stealth.min.js` | puppeteer-extra 项目（MIT） | 反检测插件提取版 |
+| [pro16](pro16_gdtv_wasm/) | `vendor_w.js` | 荔枝网 | webpack API 签名 SDK |
+| [pro17](pro17_aiqicha_abclite/) | `abclite-2061-s.original.js` / 解码产物 | 百度 | ABCLite SDK |
+| [pro18](pro18_pinduoduo_anticontent/) | `generator/` | 拼多多 | anti_content fbeZ 引擎 |
+| [pro28](pro28_toutiao_abogus/) | `bdms_browser.js` / `sdk-glue.js` / `runtime_bundler_52.js` | 字节跳动（今日头条） | 签名 SDK 原版 |
+| [pro30](pro30_dianping_font/) | 12 个 `*.woff` / `*.npy` | 大众点评（美团） | 2022 字体反爬存档 |
+| [pro32](pro32_oatd_cloudflare/) | `stealth.min.js` | puppeteer-extra（MIT） | 反检测插件提取版 |
+| [pro36](pro36_douyin_abogus/) | `reference/sign_engine.js` | 字节跳动（抖音） | a_bogus 签名函数移植版 |
+| [pro42](pro42_safeline_challenge/) | `reference/calc.wasm` | 长亭科技 SafeLine | 挑战 PoW 计算模块（911B） |
 
-说明：
+未随仓库分发的第三方代码（pro24 顶象 ConstID、pro34/pro35 京东 `sign.js`、pro37 Node 补环境产物等）已在对应 README 注明获取方式。
 
-- 以上文件如需商用或二次分发，请自行向权利方获取授权
-- 未随仓库分发的第三方代码（pro24 顶象 ConstID、pro34/pro35 京东 `sign.js`、pro37 Node 补环境产物等）已在对应 README 注明获取方式
-- 抓包样例（含 pro04 验证码图片、pro19 密文向量等）均为已过期或脱敏数据，仅作验证用例；经典归档迁移项目统一使用过期 token、占位值或固定随机源的确定性向量
+</details>
 
-## 致谢与说明
+## 合规与边界
 
-- 分析工具链：Babel AST 解混淆、wasm2wat / wasm-decompile、Chrome DevTools Protocol（js-reverse MCP）
-- 各项目 `README.md` 均注明复现对象、样例来源日期与失效风险
+> [!IMPORTANT]
+> **仅用于个人学习、学术研究与授权安全测试。** 不提供绕过付费/登录/风控的成品能力，不收录代理池、验证码打码、批量攻击工具。目标站点与第三方 SDK 的权利归其权利人所有；样例均为过期、脱敏或固定随机源向量，不能用于真实请求。
+
+- 仓库**不保存**代理、LLM、MCP 等本地配置与凭据；相关配置请放在仓库外（环境变量 / 系统密钥链）
+- 完整合规要求与发布检查清单：[PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)
+- 使用即表示同意 [LICENSE](LICENSE) 中的附加条款
+
+## 致谢
+
+- 工具链：Babel AST、`wasm2wat` / `wasm-decompile`、Chrome DevTools Protocol
+- 每个项目 README 都记录了复现对象、样例来源日期与失效风险
+- 如果这个仓库帮你节省了时间，欢迎 Star、Issue 或提交新的复现案例
+
+<div align="center">
+  <sub>Built with curiosity, verified offline.</sub>
+</div>

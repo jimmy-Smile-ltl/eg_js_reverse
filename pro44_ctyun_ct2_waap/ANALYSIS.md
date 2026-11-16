@@ -1,6 +1,6 @@
 # 电信云堤 CT2-WAAP 风险评分与信任边界
 
-> 本文只讨论产品形态、挑战流程与防御启示，不提供可执行复现、Token 铸造代码、密钥、Cookie 值、真实域名/IP/UA 或脚本哈希。
+> 本文只讨论产品形态、挑战流程与防御启示，不提供完整可执行客户端；关键实现仅以去密钥/去实例值的示意片段出现，不可直接运行。不含真实域名/IP/UA/Cookie/密钥/脚本哈希。
 
 ## 1. 产品指纹
 
@@ -70,7 +70,45 @@ GET /
 - 再定位环境信号如何进入凭证；
 - 最后验证服务端到底校验哪些字段。
 
-**不提供**：Hook 代码、bundle 补丁、密钥、Cookie 值、设备号、脚本哈希与可执行客户端。
+**不提供**：完整 Hook 客户端、bundle 补丁、密钥、Cookie 值、设备号、脚本哈希与可直接运行的请求链。
+
+### 6.1 关键实现脚本/片段（示意）
+
+> 只保留“环境评分 → 凭证 → 服务端校验”的结构；权重、密钥、版本与实例值全部省略，代码不可直接运行。
+
+```python
+# 示意：客户端只负责把信号压成风险分
+def environment_score(signals):
+    score = 0
+    score += WEIGHT_WEBDRIVER if signals["webdriver"] else 0
+    score += WEIGHT_HEADLESS if signals["headless"] else 0
+    score += WEIGHT_GRAPHICS if signals["software_render"] else 0
+    return min(score, MAX_SCORE)
+
+# 示意：风险分进入环境凭证；seal/密钥/标签不展开
+def build_env_credential(ts, device_id, risk, verdict, key):
+    plain = "&&".join([VERSION, str(ts), ENV_LABEL, device_id,
+                       str(risk), verdict, str(ts)[-2:]])
+    return seal(plain, key)
+
+# 示意：服务端应复算的边界；真实登记/版本接口不展开
+def server_accepts(env_cred, device_id, now, ua, script_hash):
+    env = open_credential(env_cred)
+    return (env.device_id == device_id
+            and device_registered(device_id)
+            and fresh(env.ts, now)
+            and version_allowed(script_hash)
+            and ua_consistent(env, ua))
+```
+
+关键环节：
+
+| 环节 | 关键内容 | 安全含义 |
+|------|----------|----------|
+| 环境采集 | 自动化/CDP/无头/图形/时序信号 | 客户端评分输入 |
+| 风险评分 | 多信号加权 + 阈值 | 只能作为辅助信号 |
+| 凭证生成 | 风险分 + 设备 + 时间窗 | 服务端需复算 |
+| 服务端校验 | 登记、版本、UA、时间 | 决定 200 / 405 |
 
 ## 7. 防御启示
 

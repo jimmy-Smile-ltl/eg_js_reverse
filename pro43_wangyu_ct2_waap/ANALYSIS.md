@@ -1,6 +1,6 @@
 # 网御星云 CT2-WAAP 挑战架构与信任边界
 
-> 本文只讨论产品形态、挑战阶段与防御启示，不提供可执行复现、Token 铸造代码、密钥、Cookie 值、真实域名/UA/脚本哈希或绕过步骤。
+> 本文只讨论产品形态、挑战阶段与防御启示，不提供完整可执行客户端；关键实现仅以去密钥/去实例值的示意片段出现，不可直接运行。不含真实域名/UA/Cookie/密钥/脚本哈希或绕过步骤。
 
 ## 1. 产品指纹
 
@@ -60,7 +60,43 @@
 - 先做行为对拍，再决定是否值得静态解混淆；
 - 服务端边界要通过篡改实验确认，而不是从客户端逻辑猜测。
 
-**不提供**：具体 Hook 代码、bundle 补丁、密钥、Cookie 值、设备号、脚本哈希与可执行客户端。
+**不提供**：完整 Hook 客户端、bundle 补丁、密钥、Cookie 值、设备号、脚本哈希与可直接运行的请求链。
+
+### 5.1 关键实现脚本/片段（示意）
+
+> 只保留凭证字段形状与处理顺序；标签、密钥、设备号、脚本哈希全部省略，代码不可直接运行。
+
+```python
+# 示意：环境凭证 / 查询凭证的字段结构
+def build_env_credential(ts, device_id, risk, verdict, key, iv):
+    plain = "&&".join(["002", str(ts), ENV_LABEL, device_id,
+                       str(risk), verdict, str(ts)[-2:]])
+    return b64(AES_CBC_PKCS7(plain, key, iv))
+
+def build_query_credential(ts, nonce, script_hash, key, iv):
+    plain = "&&".join(["002", str(ts), QUERY_LABEL, nonce,
+                       script_hash, str(ts)[-2:]])
+    return b64(AES_CBC_PKCS7(plain, key, iv))
+
+# 示意：服务端需要同时验证的状态
+def server_accepts(env_cred, query_cred, device_id, now, ua, script_hash):
+    env = open_credential(env_cred)
+    query = open_credential(query_cred)
+    return (env.device_id == device_id
+            and device_registered(device_id)
+            and fresh(env.ts, now) and fresh(query.ts, now)
+            and query.script_hash == script_hash
+            and ua_consistent(env, ua))
+```
+
+关键环节：
+
+| 环节 | 关键内容 | 安全含义 |
+|------|----------|----------|
+| 环境采集 | WebDriver/headless/图形/时序信号 | 评分输入，客户端可影响 |
+| 设备登记 | 设备标识进入服务端登记表 | 形成有状态信任 |
+| 凭证生成 | 环境/查询分离 + 短 TTL | 降低重放价值 |
+| 服务端校验 | 设备、时间、UA、脚本版本 | 可独立复算的一致性 |
 
 ## 6. 防御启示
 

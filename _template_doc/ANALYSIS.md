@@ -46,7 +46,25 @@
 
 - [行为对拍的方法论]
 - [动态调试/断点的方法论]
-- [不提供代码/补丁/密钥]
+- [不提供完整客户端/补丁/密钥]
+
+### 5.1 关键实现脚本/片段（示意）
+
+> 只保留字段形状/算法形态/状态机；密钥、常量、实例值全部省略，代码不可直接运行。
+
+```python
+# 示意：关键环节的最小结构
+def build_credential(ts, device_id, risk, verdict, key):
+    plain = "&&".join([VERSION, str(ts), ENV_LABEL, device_id, str(risk), verdict, str(ts)[-2:]])
+    return seal(plain, key)   # seal/密钥/常量不展开
+
+def server_check(credential, device_id, now):
+    data = open_credential(credential)
+    return data.device_id == device_id and device_registered(device_id) and fresh(data.ts, now)
+```
+
+- 说明哪些是占位符、哪些是服务端可验证状态；
+- 不提供完整常量表、密钥、设备登记接口或可执行请求链。
 
 ## 6. 防御启示
 

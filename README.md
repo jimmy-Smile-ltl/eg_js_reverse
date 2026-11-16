@@ -1,11 +1,12 @@
 <div align="center">
-  <img src="assets/banner.svg" alt="eg_js_reverse — 42 reproducible JS reverse-engineering cases" width="100%">
+  <img src="assets/banner.svg" alt="eg_js_reverse — 44 projects, 42 runnable, 2 docs-only" width="100%">
   <h1>JS 逆向复现集</h1>
   <p><strong>把 JS 逆向拆成可复现的最小链路</strong></p>
-  <p>加密入口 → 算法还原 → 离线验证 · 42 个实战样本</p>
+  <p>加密入口 → 算法还原 → 离线验证 · 42 个可运行复现 + 2 个思路档案</p>
   <p>
-    <img src="https://img.shields.io/badge/projects-42-0ea5e9?style=flat-square" alt="42 projects">
-    <img src="https://img.shields.io/badge/offline-100%25-22c55e?style=flat-square" alt="offline verification">
+    <img src="https://img.shields.io/badge/projects-44-0ea5e9?style=flat-square" alt="44 projects">
+    <img src="https://img.shields.io/badge/runnable-42-22c55e?style=flat-square" alt="42 runnable projects">
+    <img src="https://img.shields.io/badge/docs--only-2-94a3b8?style=flat-square" alt="2 docs-only projects">
     <img src="https://img.shields.io/badge/license-MIT-8b5cf6?style=flat-square" alt="MIT license">
     <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   </p>
@@ -30,8 +31,9 @@
 | | |
 |---|---|
 | 🧩 **最小复现** | 一个站点只保留一条核心链路；`main.py` 单文件、标准库优先、默认离线 |
-| 🧪 **离线自证** | 每个项目内置 ≥3 组样例，`py main.py` 输出 PASS/FAIL，失败即 `exit(1)` |
+| 🧪 **离线自证** | 42 个可运行项目内置 ≥3 组样例，`py main.py` 输出 PASS/FAIL，失败即 `exit(1)` |
 | 🧠 **算法拆解** | 不止给结果：记录入口定位、还原步骤、JS→Python 差异与失效边界 |
+| 📄 **文档型思路** | 对高对抗/敏感项目只写产品指纹、信任边界与防御启示，不提供可执行复现 |
 | 🛡️ **合规边界** | 不收录工程化爬虫、代理池、验证码打码；敏感配置与凭据不进入仓库 |
 
 ## 快速开始
@@ -43,10 +45,11 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 # Linux/macOS: python3 main.py --wasm
 ```
 
-- **零网络**：默认样例全部离线运行，输出即验证结果
+- **零网络**：可运行项目的默认样例全部离线执行，输出即验证结果
 - **依赖克制**：Python 标准库优先，第三方 ≤ 2 个（见项目 README）
 - **可选备份路线**：`--node` / `--wasm` / `--live`，不进入默认主流程
 - **环境**：Python 3.10+；Windows 用 `py`，其他平台用 `python3`
+- **📄 文档型项目**（pro43 / pro44）没有 `main.py`，直接阅读 README 与 ANALYSIS
 
 ## 精选项目
 
@@ -63,7 +66,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 
 ## 完整索引
 
-> 42 个项目按技术类型分组。点击分组展开；每个目录内都有独立的六段式 README。
+> 44 个项目按技术类型分组：42 个可运行复现 + 2 个 📄 思路档案。点击分组展开；每个目录内都有独立 README。
 
 ### 项目全景
 
@@ -71,11 +74,13 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 |------|:---:|--------|
 | 参数加密 | 20 | Crypto · 签名 · 请求/响应 |
 | 混淆还原 / 反调试 | 3 | AST · jsjiami · eval |
-| WAF 逆向 | 6 | 468/521 · Cookie · Turnstile |
+| WAF 逆向 | 8 | 468/521 · Cookie · Turnstile · 文档型 |
 | WASM / VM 保护 | 9 | JSVMP · h5st · XTEA |
 | 环境指纹 / 补环境 | 1 | ConstID |
 | 字体反爬 | 1 | WOFF · PUA |
 | 内容加密 | 2 | JS 包装 · 正文解密 |
+
+> 合计 **44 个目录**：**42 个可运行复现**（✅/⚠️/🔒）+ **2 个 📄 文档型思路档案**（pro43 / pro44）。
 
 <details open>
 <summary><strong>参数加密</strong> · 20 个项目</summary>
@@ -117,7 +122,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 </details>
 
 <details>
-<summary><strong>WAF 逆向</strong> · 6 个项目</summary>
+<summary><strong>WAF 逆向</strong> · 8 个项目</summary>
 
 | 项目 | 技术看点 | 验证 |
 |------|---------|------|
@@ -127,6 +132,8 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 | [pro14 · 中国土地市场网](pro14_landchina_antidebug/) | CloudWAF 行为画像 + disable-devtool 七检测器 | ✅ 34/34 |
 | [pro32 · Cloudflare Turnstile](pro32_oatd_cloudflare/) | cf_clearance 刷新五方案 + DOM 状态机 + 贝塞尔轨迹 | ✅ 13/13 |
 | [pro42 · 长亭雷池 SafeLine](pro42_safeline_challenge/) | 468 → issue/calc/verify → JWT；calc.wasm 纯 Python | ✅ 9/9 |
+| [pro43 · 网御星云 CT2-WAAP](pro43_wangyu_ct2_waap/) | 环境检查 + 设备登记 + 短时凭证；只写架构/信任边界/防御 | 📄 仅思路 |
+| [pro44 · 电信云堤 CT2-WAAP](pro44_ctyun_ct2_waap/) | 动态配置 + 大 bundle + 客户端风险评分；只写思路/防御 | 📄 仅思路 |
 
 </details>
 
@@ -176,6 +183,10 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 </details>
 
 > 验证码厂商专项与瑞数 WAF 专项不在本仓库新增收录范围；历史自建滑块样例（pro04）作为例外保留。
+>
+> **📄 仅思路**：文档型项目只写产品指纹、挑战架构、信任边界与防御启示，不提供可执行代码、Token/Cookie/密钥或逐步绕过。
+>
+> **新政策（2026-11-16 起）**：后续整合项目**一律采用文档型模式**，不再新增可运行复现；42 个历史项目保持可运行。
 
 ## OTA 专题
 
@@ -194,7 +205,9 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 请求分析 → 入口定位 → 代码分析 → 解混淆 → 算法还原 → 验证测试
 ```
 
-每个项目都按同一套质量标准交付：
+> **新政策（2026-11-16 起）**：后续整合项目**一律采用 📄 仅思路 模式**——只写产品指纹、挑战架构、信任边界与防御启示，不提供直接复现。42 个历史项目继续按可运行标准维护。
+
+每个项目都按同一套质量底线交付：
 
 | 你会得到 | 我们不做 |
 |---------|---------|
@@ -202,9 +215,11 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 | 入口定位与 JS→Python 差异说明 | 只有结论、没有验证过程的“黑盒脚本” |
 | 确定性向量 / wasm / Node 对拍 | 把随机签名结构合法当成算法正确 |
 | 失效边界、版本轮换与坑清单 | 真实 Cookie、Token、个人数据或本地配置 |
+| 📄 文档型：产品指纹、信任边界、防御建议 | 可执行客户端、Token 铸造、真实实例值、逐步绕过 |
 
 - 完整规范：[PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)（合规红线 / 准入过滤 / 脱敏 / 版权 / 导入 SOP / 发布检查）
-- 新项目模板：[_template/](_template/)
+- 可运行项目模板：[_template/](_template/)
+- 文档型项目模板：[_template_doc/](_template_doc/)
 - Claude Code 速查：[CLAUDE.md](CLAUDE.md)
 - 技术标签：`encrypt` · `obfuscate` · `debug` · `waf` · `wasm` · `vm` · `env` · `font` · `captcha`
 
@@ -258,6 +273,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 > **仅用于个人学习、学术研究与授权安全测试。** 不提供绕过付费/登录/风控的成品能力，不收录代理池、验证码打码、批量攻击工具。目标站点与第三方 SDK 的权利归其权利人所有；样例均为过期、脱敏或固定随机源向量，不能用于真实请求。
 
 - 仓库**不保存**代理、LLM、MCP 等本地配置与凭据；相关配置请放在仓库外（环境变量 / 系统密钥链）
+- **2026-11-16 起新整合项目为 📄 文档型，不提供直接复现**；42 个历史可运行项目保留，但不对线上长期可用性作保证
 - 完整合规要求与发布检查清单：[PROJECT_GUIDELINES.md](PROJECT_GUIDELINES.md)
 - 使用即表示同意 [LICENSE](LICENSE) 中的附加条款
 

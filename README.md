@@ -1,12 +1,12 @@
 <div align="center">
-  <img src="assets/banner.svg" alt="eg_js_reverse — 44 projects, 42 runnable, 2 docs-only" width="100%">
+  <img src="assets/banner.svg" alt="eg_js_reverse — 45 projects, 42 runnable, 3 docs-only" width="100%">
   <h1>JS 逆向复现集</h1>
   <p><strong>把 JS 逆向拆成可复现的最小链路</strong></p>
-  <p>加密入口 → 算法还原 → 离线验证 · 42 个可运行复现 + 2 个思路档案</p>
+  <p>加密入口 → 算法还原 → 离线验证 · 42 个可运行复现 + 3 个思路档案</p>
   <p>
-    <img src="https://img.shields.io/badge/projects-44-0ea5e9?style=flat-square" alt="44 projects">
+    <img src="https://img.shields.io/badge/projects-45-0ea5e9?style=flat-square" alt="45 projects">
     <img src="https://img.shields.io/badge/runnable-42-22c55e?style=flat-square" alt="42 runnable projects">
-    <img src="https://img.shields.io/badge/docs--only-2-94a3b8?style=flat-square" alt="2 docs-only projects">
+    <img src="https://img.shields.io/badge/docs--only-3-94a3b8?style=flat-square" alt="3 docs-only projects">
     <img src="https://img.shields.io/badge/license-MIT-8b5cf6?style=flat-square" alt="MIT license">
     <img src="https://img.shields.io/badge/Python-3.10%2B-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python 3.10+">
   </p>
@@ -49,7 +49,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 - **依赖克制**：Python 标准库优先，第三方 ≤ 2 个（见项目 README）
 - **可选备份路线**：`--node` / `--wasm` / `--live`，不进入默认主流程
 - **环境**：Python 3.10+；Windows 用 `py`，其他平台用 `python3`
-- **📄 文档型项目**（pro43 / pro44）没有 `main.py`，直接阅读 README 与 ANALYSIS
+- **📄 文档型项目**（pro43 / pro44 / pro45）没有 `main.py`，直接阅读 README 与 ANALYSIS
 
 ## 精选项目
 
@@ -66,7 +66,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 
 ## 完整索引
 
-> 44 个项目按技术类型分组：42 个可运行复现 + 2 个 📄 思路档案。点击分组展开；每个目录内都有独立 README。
+> 45 个项目按技术类型分组：42 个可运行复现 + 3 个 📄 思路档案。点击分组展开；每个目录内都有独立 README。
 
 ### 项目全景
 
@@ -74,13 +74,13 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 |------|:---:|--------|
 | 参数加密 | 20 | Crypto · 签名 · 请求/响应 |
 | 混淆还原 / 反调试 | 3 | AST · jsjiami · eval |
-| WAF 逆向 | 8 | 468/521 · Cookie · Turnstile · 文档型 |
+| WAF 逆向 | 9 | 468/521 · Cookie · Turnstile · VM · 文档型 |
 | WASM / VM 保护 | 9 | JSVMP · h5st · XTEA |
 | 环境指纹 / 补环境 | 1 | ConstID |
 | 字体反爬 | 1 | WOFF · PUA |
 | 内容加密 | 2 | JS 包装 · 正文解密 |
 
-> 合计 **44 个目录**：**42 个可运行复现**（✅/⚠️/🔒）+ **2 个 📄 文档型思路档案**（pro43 / pro44）。
+> 合计 **45 个目录**：**42 个可运行复现**（✅/⚠️/🔒）+ **3 个 📄 文档型思路档案**（pro43 / pro44 / pro45）。
 
 <details open>
 <summary><strong>参数加密</strong> · 20 个项目</summary>
@@ -122,7 +122,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 </details>
 
 <details>
-<summary><strong>WAF 逆向</strong> · 8 个项目</summary>
+<summary><strong>WAF 逆向</strong> · 9 个项目</summary>
 
 | 项目 | 技术看点 | 验证 |
 |------|---------|------|
@@ -134,6 +134,7 @@ cd pro42_safeline_challenge && py main.py --wasm     # Windows
 | [pro42 · 长亭雷池 SafeLine](pro42_safeline_challenge/) | 468 → issue/calc/verify → JWT；calc.wasm 纯 Python | ✅ 9/9 |
 | [pro43 · 网御星云 CT2-WAAP](pro43_wangyu_ct2_waap/) | 环境检查 + 设备登记 + 短时凭证；只写架构/信任边界/防御 | 📄 仅思路 |
 | [pro44 · 电信云堤 CT2-WAAP](pro44_ctyun_ct2_waap/) | 动态配置 + 大 bundle + 客户端风险评分；只写思路/防御 | 📄 仅思路 |
+| [pro45 · Kasada / KPSDK](pro45_kasada_kpsdk/) | 429/200 双形态 + 混淆 VM + PoW + 逐请求派生；只写架构/信任边界/防御 | 📄 仅思路 |
 
 </details>
 
